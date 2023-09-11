@@ -28,6 +28,7 @@ public:
   const Reader& reader() const;
   Writer& writer();
   const Writer& writer() const;
+  uint64_t capacity() const;
 };
 
 class Writer : public ByteStream

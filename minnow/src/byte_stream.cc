@@ -9,6 +9,12 @@ using namespace std;
 ByteStream::ByteStream( uint64_t capacity )
   : capacity_( capacity ), buffer(), closed( false ), hasError( false ), bytesPopped( 0 ), bytesPushed( 0 )
 {}
+
+uint64_t ByteStream::capacity() const
+{
+  return capacity_;
+}
+
 void Writer::push( string data )
 {
 
