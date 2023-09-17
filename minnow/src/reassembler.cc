@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Reassembler::Reassembler() : buffer(), buf(), end_index( -1 ), buf_begin( 0 ), pending( 0 ) {}
+Reassembler::Reassembler() : buffer(), buf(), end_index( -1 ), pending( 0 ) {}
 
 void Reassembler::insert( uint64_t first_index, string data, bool is_last_substring, Writer& output )
 {

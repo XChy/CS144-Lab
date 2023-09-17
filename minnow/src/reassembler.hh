@@ -40,6 +40,5 @@ private:
   std::map<uint64_t, uint64_t> buffer;
   std::string buf;
   uint64_t end_index;
-  uint64_t buf_begin;
   uint64_t pending;
 };
