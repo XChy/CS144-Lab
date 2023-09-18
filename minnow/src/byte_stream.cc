@@ -7,7 +7,14 @@
 using namespace std;
 
 ByteStream::ByteStream( uint64_t capacity )
-  : capacity_( capacity ), buffer(), closed( false ), hasError( false ), bytesPopped( 0 ), bytesPushed( 0 )
+  : capacity_( capacity )
+  , buffer()
+  , buffer_actual()
+  , closed( false )
+  , hasError( false )
+  , bytesPopped( 0 )
+  , bytesPushed( 0 )
+  , bytesBuffered( 0 )
 {}
 
 uint64_t ByteStream::capacity() const
@@ -17,12 +24,13 @@ uint64_t ByteStream::capacity() const
 
 void Writer::push( string data )
 {
-
+  if ( data.empty() )
+    return;
   int toPushLen = min( (int)data.size(), (int)available_capacity() );
-  for ( int i = 0; i < toPushLen; ++i ) {
-    buffer.push( data[i] );
-  }
+  buffer_actual.push( std::move( data ) );
+  buffer.push( string_view( buffer_actual.back() ).substr( 0, toPushLen ) );
   bytesPushed += toPushLen;
+  bytesBuffered += toPushLen;
 }
 
 void Writer::close()
@@ -42,7 +50,7 @@ bool Writer::is_closed() const
 
 uint64_t Writer::available_capacity() const
 {
-  return capacity_ - buffer.size();
+  return capacity_ - bytesBuffered;
 }
 
 uint64_t Writer::bytes_pushed() const
@@ -52,7 +60,10 @@ uint64_t Writer::bytes_pushed() const
 
 string_view Reader::peek() const
 {
-  return { &buffer.front(), 1 };
+  if ( !buffer.empty() )
+    return buffer.front();
+  else
+    return string_view();
 }
 
 bool Reader::is_finished() const
@@ -68,13 +79,25 @@ bool Reader::has_error() const
 void Reader::pop( uint64_t len )
 {
   bytesPopped += len;
-  for ( unsigned i = 0; i < len; ++i )
+  for ( unsigned i = 0; i < len; ) {
+    if ( buffer.front().size() > len - i ) {
+      buffer.front() = buffer.front().substr( len - i );
+      i = len;
+    } else {
+      i += buffer.front().size();
+      buffer.pop();
+      buffer_actual.pop();
+    }
+  }
+
+  while ( !buffer.empty() && buffer.front().empty() )
     buffer.pop();
+  bytesBuffered -= len;
 }
 
 uint64_t Reader::bytes_buffered() const
 {
-  return buffer.size();
+  return bytesBuffered;
 }
 
 uint64_t Reader::bytes_popped() const

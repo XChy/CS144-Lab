@@ -13,11 +13,13 @@ class ByteStream
 {
 protected:
   uint64_t capacity_;
-  std::queue<char> buffer;
+  std::queue<std::string_view> buffer;
+  std::queue<std::string> buffer_actual;
   bool closed;
   bool hasError;
   int bytesPopped;
   int bytesPushed;
+  int bytesBuffered;
   // Please add any additional state to the ByteStream here, and not to the Writer and Reader interfaces.
 
 public:
