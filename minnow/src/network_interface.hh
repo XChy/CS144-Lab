@@ -2,10 +2,14 @@
 
 #include "address.hh"
 #include "ethernet_frame.hh"
+#include "ethernet_header.hh"
 #include "ipv4_datagram.hh"
 
+#include <cstdint>
+#include <deque>
 #include <iostream>
 #include <list>
+#include <map>
 #include <optional>
 #include <queue>
 #include <unordered_map>
@@ -34,12 +38,23 @@
 // and learns or replies as necessary.
 class NetworkInterface
 {
+  constexpr static EthernetAddress boardcast_address = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
+
 private:
   // Ethernet (known as hardware, network-access, or link-layer) address of the interface
   EthernetAddress ethernet_address_;
 
   // IP (known as Internet-layer or network-layer) address of the interface
   Address ip_address_;
+
+  size_t time_;
+
+  std::deque<EthernetFrame> frames_;
+  std::unordered_map<uint32_t, EthernetAddress> ip_to_ethernet_;
+  std::unordered_map<uint32_t, size_t> ip_to_time_;
+  std::deque<uint32_t> ips_;
+
+  void pushARP( uint16_t opcode, uint32_t target_ip, EthernetAddress target_eth );
 
 public:
   // Construct a network interface with given Ethernet (network-access-layer) and IP (internet-layer)
